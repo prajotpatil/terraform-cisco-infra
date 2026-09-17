@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    aci = {
+      source  = "CiscoDevNet/aci"
+      version = "~> 2.0"
+    }
+  }
+}
 resource "aci_tenant" "this" {
   name        = var.tenant_name
   description = "Managed by Terraform - do not edit manually"
@@ -19,13 +27,13 @@ resource "aci_subnet" "this" {
   ip        = var.bd_subnet
 }
 
-resource "aci_app_profile" "this" {
+resource "aci_application_profile" "this" {
   tenant_dn = aci_tenant.this.id
   name      = var.app_profile_name
 }
 
 resource "aci_application_epg" "this" {
-  application_profile_dn = aci_app_profile.this.id
+  application_profile_dn = aci_application_profile.this.id
   name                    = var.epg_name
   relation_fv_rs_bd       = aci_bridge_domain.this.id
 }

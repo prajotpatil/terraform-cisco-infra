@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    aci = {
+      source  = "CiscoDevNet/aci"
+      version = "~> 2.0"
+    }
+  }
+}
 resource "aci_vlan_pool" "this" {
   name       = var.vlan_pool_name
   alloc_mode = "static"
@@ -15,8 +23,13 @@ resource "aci_physical_domain" "this" {
 }
 
 resource "aci_attachable_access_entity_profile" "this" {
-  name                    = var.aep_name
-  relation_infra_rs_dom_p = [aci_physical_domain.this.id]
+  name = var.aep_name
+
+  relation_to_domains = [
+    {
+      target_dn = aci_physical_domain.this.id
+    }
+  ]
 }
 
 resource "aci_leaf_access_port_policy_group" "this" {
@@ -31,7 +44,8 @@ resource "aci_leaf_interface_profile" "this" {
 resource "aci_access_port_selector" "this" {
   leaf_interface_profile_dn      = aci_leaf_interface_profile.this.id
   name                            = var.port_selector_name
-  relation_infra_rs_acc_base_grp = aci_leaf_access_port_policy_group.this.id
+  access_port_selector_type       = "range"
+  relation_infra_rs_acc_base_grp  = aci_leaf_access_port_policy_group.this.id
 }
 
 resource "aci_access_port_block" "this" {
